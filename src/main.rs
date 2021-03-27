@@ -1,34 +1,34 @@
-use cursive::{Cursive, CursiveExt};
-use cursive::views::{Button, TextView, FixedLayout};
-use cursive::Rect;
+use std::io;
+use termion::raw::IntoRawMode;
+use tui::backend::TermionBackend;
+use tui::layout::{Constraint, Direction, Layout};
+use tui::widgets::{Block, Borders, Widget};
+use tui::Terminal;
 
-fn main() {
-    let mut app = Cursive::new();
+fn main() -> Result<(), io::Error> {
+    let stdout = io::stdout().into_raw_mode()?;
+    let backend = TermionBackend::new(stdout);
 
-    app.load_toml(include_str!("tui.toml")).unwrap();
+    let mut app = Terminal::new(backend)?;
 
-    // app.add_layer(TextView::new("Hello This is Termigit!!"));
-
-    // app.add_global_callback('q', |s| s.quit());
-
-    // let quit_button = Button::new("Quit", |s| s.quit());
-
-    // app.add_layer(quit_button);
-
-
-
-
-
-let layout = FixedLayout::new()
-    .child(Rect::from_size((0, 0), (22, 1)), TextView::new("Hello This is Termigit"))
-    .child(
-        Rect::from_size((3, 15), (16, 1)),
-        Button::new("Quit", |s| s.quit()),
-    );
-
-    app.add_layer(layout);
-
-
-
-    app.run();
+    app.draw(|f| {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .margin(1)
+            .constraints(
+                [
+                    Constraint::Percentage(10),
+                    Constraint::Percentage(80),
+                    Constraint::Percentage(10),
+                ]
+                .as_ref(),
+            )
+            .split(f.size());
+        let block = Block::default().title("Termigit").borders(Borders::ALL);
+        f.render_widget(block, chunks[0]);
+        let block = Block::default()
+            .title("Stage your Files")
+            .borders(Borders::ALL);
+        f.render_widget(block, chunks[1]);
+    })
 }
